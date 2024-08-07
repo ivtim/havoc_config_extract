@@ -30,9 +30,6 @@ class Unpacker:
         self.size   : int   = len(new_bytes)
         self.pointer: int   = 0
     
-    def getbuffer(self):
-        return pack("<L", self.size) + self.buffer
-    
     def getint(self):
         int_buffer = self.buffer[self.pointer : self.pointer + 4]
         b = unpack('<i', int_buffer)
@@ -180,13 +177,19 @@ def main():
     content_hex = content.hex().upper()
     pattern = "(.([1-9a-fA-f].{6}))(.([1-9a-fA-f].{6}))((0(0|1|2|3)0{6}))((0(0|1|2|3)0{6}))(.{6}00).{5,500}50004F00530054"
     result = re.search(pattern, content_hex)
-    config_pointer = result.start()
-    if config_pointer:
+    if result == None:
+        print("Can't find config in file")
+        return
+    
+    try:
         found_index = int(result.start() / 2)
         config_raw = content[found_index:found_index+3000]
         parsed_config = parse_config(config_raw)
         json_config = json.dumps(parsed_config, indent=4)
         print(json_config)
+    except:
+        print("Error parse config")
+
 
 
 if __name__ == "__main__":
